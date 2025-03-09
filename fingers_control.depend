@@ -1,0 +1,13 @@
+# depslib dependency file v1.0
+1741547859 source:/home/olivier/Documents/dev/c++/fingers_control/main.cpp
+	"CameraService.h"
+	<opencv2/opencv.hpp>
+	<iostream>
+
+1741547736 source:/home/olivier/Documents/dev/c++/fingers_control/src/CameraService.cpp
+	"CameraService.h"
+	<iostream>
+
+1741547715 /home/olivier/Documents/dev/c++/fingers_control/include/CameraService.h
+	<opencv2/opencv.hpp>
+
