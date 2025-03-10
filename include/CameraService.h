@@ -8,15 +8,20 @@ using namespace cv;
 class CameraService
 {
     public:
+        // Constructeur avec l'index de la caméra (0 par défaut)
         CameraService(int cameraIndex = 0);
         ~CameraService();
 
         bool isOpened() const;
-        bool getFrame(cv::Mat& frame);
+        bool updateFrame();
         void release();
+        Mat getFrame();
+        void cameraProcess();
+        VideoCapture getCap();
 
     private:
-        VideoCapture cap;
+        VideoCapture cap;  // Gère l'accès à la caméra
+        Mat frame;         // Stocke l'image capturée
 };
 
 #endif // CAMERASERVICE_H
