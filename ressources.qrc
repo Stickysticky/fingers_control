@@ -1,0 +1,7 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file>assets/MobileNetSSD/deploy.prototxt</file>
+        <file>assets/MobileNetSSD/mobilenet_iter_73000.caffemodel</file>
+    </qresource>
+</RCC>
+
