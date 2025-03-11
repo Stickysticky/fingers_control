@@ -31,7 +31,22 @@
 		<Compiler>
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
+			<Add directory="/usr/include/opencv4" />
+			<Add directory="/home/olivier/Documents/dev/c++/fingers_control/include" />
+			<Add directory="usr/include/opencv" />
 		</Compiler>
+		<Linker>
+			<Add library="opencv_core" />
+			<Add library="opencv_highgui" />
+			<Add library="opencv_imgproc" />
+			<Add library="opencv_dnn" />
+			<Add library="opencv_videoio" />
+			<Add library="opencv_imgcodecs" />
+			<Add directory="/usr/lib/x86_64-linux-gnu" />
+		</Linker>
+		<Unit filename="assets/deploy.prototxt" />
+		<Unit filename="assets/mobilenet_iter_73000.caffemodel" />
+		<Unit filename="images/pokeball.png" />
 		<Unit filename="include/CameraService.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="src/CameraService.cpp" />

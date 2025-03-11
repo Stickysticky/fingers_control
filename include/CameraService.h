@@ -17,11 +17,11 @@ class CameraService
         void release();
         Mat getFrame();
         void cameraProcess();
-        VideoCapture getCap();
 
     private:
         VideoCapture cap;  // Gère l'accès à la caméra
         Mat frame;         // Stocke l'image capturée
+        Mat symbolTemplate; // Template pour le symbole à détecter
 };
 
 #endif // CAMERASERVICE_H
