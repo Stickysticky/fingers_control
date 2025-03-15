@@ -2,26 +2,24 @@ cmake_minimum_required(VERSION 3.5)
 
 project(fingers_control LANGUAGES CXX)
 
-# Définir la norme C++
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Trouver OpenCV
 find_package(OpenCV REQUIRED)
 
-# Trouver Qt5 (assurez-vous que Qt5 est bien installé sur votre machine)
-find_package(Qt5 REQUIRED COMPONENTS Core)
-
-# Ajouter les fichiers source
+# Ajouter les fichiers sources
 add_executable(fingers_control main.cpp
-    CameraService.cpp CameraService.h MobileNetSSDService.cpp MobileNetSSDService.h
-    ressources.qrc
-)
+    CameraService.cpp CameraService.h MobileNetSSDService.cpp MobileNetSSDService.h ressources.qrc
+    assets/MobileNetSSD/deploy.prototxt assets/MobileNetSSD/mobilenet_iter_73000.caffemodel images/pokeball.png ressources/MobileNetSSD/deploy.prototxt)
 
-# Lier Qt5 et OpenCV avec votre projet
-target_link_libraries(fingers_control Qt5::Core ${OpenCV_LIBS})
+# Inclure les headers OpenCV
+include_directories(${OpenCV_INCLUDE_DIRS})
 
-# Installer votre programme
+# Lier OpenCV aux bibliothèques du projet
+target_link_libraries(fingers_control ${OpenCV_LIBS})
+
+# Installation
 include(GNUInstallDirs)
 install(TARGETS fingers_control
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}

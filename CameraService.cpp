@@ -1,9 +1,14 @@
 #include "CameraService.h"
 #include <iostream>
 #include "MobileNetSSDService.h"
+#include <vector>
+#include <opencv2/dnn.hpp>
+#include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace cv;
+using namespace cv::dnn;
+
 
 CameraService::CameraService(int cameraIndex)
     : cap(cameraIndex)  // Initialisation directe de cap
@@ -44,31 +49,7 @@ Mat CameraService::getFrame() {
 }
 
 
-
 /*
-void CameraService::cameraProcess(){
-   namedWindow("Fingers Control");//Declaring the video to show the video//
-
-   while (true){ //Taking an everlasting loop to show the video//
-      cap >> frame;
-      if (frame.empty()){ //Breaking the loop if no video frame is detected//
-         break;
-      }
-      imshow("Fingers Control", frame);//Showing the video//
-      char c = (char)waitKey(25);//Allowing 25 milliseconds frame processing time and initiating break condition//
-      if (c == 27){ //If 'Esc' is entered break the loop//
-         break;
-      }
-
-      if (cv::getWindowProperty("Fingers Control", WND_PROP_VISIBLE) < 1) {
-            break;  // La fenêtre est fermée
-      }
-   }
-
-   release();//Releasing the buffer memory//
-   destroyAllWindows();
-}*/
-
 void CameraService::cameraProcess() {
     namedWindow("Fingers Control");
     MobileNetSSDService mobileNetService;
@@ -79,6 +60,8 @@ void CameraService::cameraProcess() {
             cerr << "⚠️ Warning: No frame captured!" << endl;
             break;
         }
+
+        cv::flip(frame, frame, 1);
 
         // Prétraitement de l'image
         Mat blob = blobFromImage(frame, 0.007843, Size(300, 300), Scalar(127.5, 127.5, 127.5), true, false);
@@ -125,3 +108,89 @@ void CameraService::cameraProcess() {
     release();
     destroyAllWindows();
 }
+*/
+
+
+void CameraService::cameraProcess() {
+    namedWindow("Fingers Control");
+
+    // Chargement du modèle YOLO
+    String yoloCfg = "/home/olivier/Documents/dev/IA/darknet/cfg/yolov3-tiny.cfg";  // Le fichier de configuration YOLO
+    String yoloWeights = "/home/olivier/Documents/dev/IA/darknet/weights/yolov3-tiny.weights";  // Le fichier de poids YOLO
+
+    Net net = readNetFromDarknet(yoloCfg, yoloWeights);
+    if (net.empty()) {
+        cerr << "⚠️ Error loading YOLO model!" << endl;
+        return;
+    }
+
+    while (true) {
+        // Récupérer la frame
+        if (!updateFrame()) {
+            cerr << "⚠️ Warning: No frame captured!" << endl;
+            break;
+        }
+
+        cv::flip(frame, frame, 1);
+
+        // Prétraitement de l'image pour YOLO
+        Mat blob = blobFromImage(frame, 0.00392, Size(416, 416), Scalar(0, 0, 0), true, false);
+        net.setInput(blob);
+
+        // Passer l'image dans le réseau
+        vector<Mat> outs;
+        net.forward(outs, net.getUnconnectedOutLayersNames());
+
+        // Parcourir les résultats
+        for (size_t i = 0; i < outs.size(); i++) {
+            Mat detectionMat = outs[i];
+            for (int j = 0; j < detectionMat.rows; j++) {
+                float* data = (float*)detectionMat.data + j * 85;  // 85 = 4 (box) + 1 (class) + 80 (scores)
+                float confidence = data[4];
+                if (confidence > 0.5) {  // Seulement les objets détectés avec une bonne précision
+                    // Récupérer la classe avec la plus grande probabilité
+                    int classId = -1;
+                    float maxProb = -1;
+                    for (int k = 5; k < 85; k++) {
+                        if (data[k] > maxProb) {
+                            maxProb = data[k];
+                            classId = k - 5;
+                        }
+                    }
+
+                    // Si une classe a été détectée
+                    if (classId >= 0 && classId < MobileNetSSDService::CLASS_NAMES.size()) {
+                        int xLeftBottom = static_cast<int>(data[0] * frame.cols);
+                        int yLeftBottom = static_cast<int>(data[1] * frame.rows);
+                        int xRightTop = static_cast<int>(data[2] * frame.cols);
+                        int yRightTop = static_cast<int>(data[3] * frame.rows);
+
+                        // Dessiner un rectangle autour de l'objet détecté
+                        rectangle(frame, Point(xLeftBottom, yLeftBottom), Point(xRightTop, yRightTop), Scalar(0, 255, 0), 2);
+
+                        // Ajouter le nom de l'objet détecté
+                        string label = MobileNetSSDService::CLASS_NAMES[classId] + ": " + to_string(confidence);
+                        putText(frame, label, Point(xLeftBottom, yLeftBottom - 10), FONT_HERSHEY_SIMPLEX, 0.5, Scalar(0, 255, 0), 2);
+                    }
+                }
+            }
+        }
+
+        // Afficher la vidéo avec les rectangles autour des objets détectés
+        imshow("Fingers Control", frame);
+
+        // Condition pour quitter avec la touche 'Esc'
+        char c = (char)waitKey(25);
+        if (c == 27) {
+            break;
+        }
+
+        if (cv::getWindowProperty("Fingers Control", cv::WND_PROP_VISIBLE) < 1) {
+            break;  // La fenêtre est fermée
+        }
+    }
+
+    release();
+    destroyAllWindows();
+}
+
