@@ -49,7 +49,7 @@ Mat CameraService::getFrame() {
 }
 
 
-/*
+
 void CameraService::cameraProcess() {
     namedWindow("Fingers Control");
     MobileNetSSDService mobileNetService;
@@ -108,9 +108,9 @@ void CameraService::cameraProcess() {
     release();
     destroyAllWindows();
 }
-*/
 
 
+/*
 void CameraService::cameraProcess() {
     namedWindow("Fingers Control");
 
@@ -193,4 +193,4 @@ void CameraService::cameraProcess() {
     release();
     destroyAllWindows();
 }
-
+*/
